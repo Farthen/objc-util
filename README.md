@@ -12,7 +12,7 @@ Just some convenience functions for CoreGraphics and UIKit. Will be expanded lat
 This scans a class for its properties and returns an FAPropertyInfo object that offers this information in an easily readable format.
 
 ### Mish.h
-Some #defines to make my life easier
+Some #defines to make my life easier.
 
 ## License
 
