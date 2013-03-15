@@ -24,6 +24,9 @@
 // The total count of all objects in the cache
 @property (readonly) NSUInteger objectCount;
 
+// A list of all indexes currently in the array
+@property (readonly) NSArray *indexes;
+
 // The total cost of all objects in the cache
 @property (readonly) NSUInteger totalCost;
 
@@ -46,6 +49,8 @@
 // Triggered when the timer has fired for the object with key
 - (void)timerElapsedForKey:(id)key;
 
+// Returns the oldest object in the cache
+- (id)oldestObjectInCache;
 @end
 
 @interface FACachedItem : NSObject <NSCoding>
@@ -53,6 +58,9 @@
 - (id)initWithCache:(FACache *)cache key:(id)key object:(id)object;
 
 @property (readonly) id cacheKey;
+
+// The date when the item was added to the cache
+@property (readonly) NSDate *dateAdded;
 @property (assign) NSTimeInterval expirationTime;
 
 @property (assign) NSUInteger cost;
@@ -63,5 +71,6 @@
 - (void)removeTimer;
 - (void)removeExpirationData;
 - (BOOL)objectHasExpired;
+
 
 @end

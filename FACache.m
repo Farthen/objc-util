@@ -46,6 +46,7 @@
         }
         _realDelegate = [aDecoder decodeObjectForKey:@"realDelegate"];
         self.defaultExpirationTime = [aDecoder decodeDoubleForKey:@"defaultExpirationTime"];
+        self.name = [aDecoder decodeObjectForKey:@"name"];
     }
     return self;
 }
@@ -55,11 +56,12 @@
     [aCoder encodeObject:_cachedItems forKey:@"cachedItems"];
     [aCoder encodeObject:_realDelegate forKey:@"realDelegate"];
     [aCoder encodeDouble:self.defaultExpirationTime forKey:@"defaultExpirationTime"];
+    [aCoder encodeObject:self.name forKey:@"name"];
 }
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<FACache with name: \"%@\", object count: %i, total cost:%i", self.name, self.objectCount, self.totalCost];
+    return [NSString stringWithFormat:@"<FACache with name: \"%@\", object count: %i, total cost:%i>", self.name, self.objectCount, self.totalCost];
 }
 
 // Returns YES when the object has expired
@@ -109,7 +111,7 @@
     [super setObject:item forKey:key cost:cost];
     [_cachedItems setObject:item forKey:key];
     
-    NSLog(@"Adding object %@ to cache: \"%@\", new object count: %i", [obj description], self.name, self.objectCount);
+    //NSLog(@"Adding object %@ to cache: \"%@\", new object count: %i", [obj description], self.name, self.objectCount);
 }
 
 - (void)setObject:(id)obj forKey:(id)key expirationTime:(NSTimeInterval)expirationTime
@@ -130,10 +132,9 @@
 - (void)purgeObjectForKey:(id)key
 {
     [self removeExpirationDataForKey:key];
-    id obj = [_cachedItems objectForKey:key];
     [_cachedItems removeObjectForKey:key];
     
-    NSLog(@"Purging object %@ from cache: \"%@\", new object count: %i", [[obj object] description], self.name, self.objectCount);
+    //NSLog(@"Purging object %@ from cache: \"%@\", new object count: %i", [[obj object] description], self.name, self.objectCount);
 }
 
 - (void)purgeObject:(id)obj
@@ -186,6 +187,11 @@
     }
 }
 
+- (NSArray *)indexes
+{
+    return _cachedItems.allKeys;
+}
+
 - (NSUInteger)totalCost
 {
     NSUInteger totalCost = 0;
@@ -222,6 +228,28 @@
     [self purgeObject:obj];
 }
 
+- (id)oldestObjectInCache
+{
+    FACachedItem *oldest = nil;
+    for (id key in _cachedItems) {
+        FACachedItem *item = [_cachedItems objectForKey:key];
+        if (!oldest) {
+            oldest = item;
+        }
+        if ([item.dateAdded timeIntervalSinceDate:oldest.dateAdded] < 0) {
+            oldest = item;
+        }
+    }
+    DDLogModel(@"Oldest item in cache:%@, date:%@", oldest, oldest.dateAdded);
+    return oldest.object;
+}
+
+- (void)dealloc
+{
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter removeObserver:self];
+}
+
 @end
 
 @implementation FACachedItem {
@@ -237,6 +265,7 @@
 {
     self = [super init];
     if (self) {
+        _dateAdded = [NSDate date];
         _cache = cache;
         _key = key;
         _object = object;
@@ -254,6 +283,7 @@
         _object = [aDecoder decodeObjectForKey:@"object"];
         _expirationDate = [aDecoder decodeObjectForKey:@"expirationDate"];
         _expirationTime = [aDecoder decodeDoubleForKey:@"expirationTime"];
+        _dateAdded = [aDecoder decodeObjectForKey:@"dateAdded"];
         if (![self objectHasExpired]) {
             [self setTimer];
         }
@@ -269,11 +299,12 @@
     [aCoder encodeObject:_object forKey:@"object"];
     [aCoder encodeObject:_expirationDate forKey:@"expirationDate"];
     [aCoder encodeDouble:_expirationTime forKey:@"expirationTime"];
+    [aCoder encodeObject:_dateAdded forKey:@"dateAdded"];
 }
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<FACachedItem with cache:%@>", _cache];
+    return [NSString stringWithFormat:@"<FACachedItem with cache:%@ added on %@>", _cache, self.dateAdded];
 }
 
 - (id)cacheKey
@@ -341,4 +372,3 @@
 }
 
 @end
-
