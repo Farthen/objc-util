@@ -7,6 +7,9 @@
 
 #import "FACache.h"
 
+#undef LOG_LEVEL
+#define LOG_LEVEL LOG_LEVEL_MODEL
+
 @implementation FACache {
     NSMutableDictionary *_cachedItems;
     id <NSCacheDelegate> _realDelegate;
@@ -47,6 +50,8 @@
         _realDelegate = [aDecoder decodeObjectForKey:@"realDelegate"];
         self.defaultExpirationTime = [aDecoder decodeDoubleForKey:@"defaultExpirationTime"];
         self.name = [aDecoder decodeObjectForKey:@"name"];
+        
+        DDLogModel(@"FACache \"%@\" loaded from coder. Keys: %@", self.name, self.allKeys);
     }
     return self;
 }
@@ -111,7 +116,7 @@
     [super setObject:item forKey:key cost:cost];
     [_cachedItems setObject:item forKey:key];
     
-    //NSLog(@"Adding object %@ to cache: \"%@\", new object count: %i", [obj description], self.name, self.objectCount);
+    //DDLogModel(@"Adding object %@ with key: %@ to cache: \"%@\", new object count: %i", [obj description], key, self.name, self.objectCount);
 }
 
 - (void)setObject:(id)obj forKey:(id)key expirationTime:(NSTimeInterval)expirationTime
@@ -131,10 +136,11 @@
 
 - (void)purgeObjectForKey:(id)key
 {
+    FACachedItem *obj = [_cachedItems objectForKey:key];
     [self removeExpirationDataForKey:key];
     [_cachedItems removeObjectForKey:key];
     
-    //NSLog(@"Purging object %@ from cache: \"%@\", new object count: %i", [[obj object] description], self.name, self.objectCount);
+    //DDLogModel(@"Purging object %@ from cache: \"%@\", new object count: %i", [[obj object] description], self.name, self.objectCount);
 }
 
 - (void)purgeObject:(id)obj
@@ -226,6 +232,11 @@
 {
     [_realDelegate cache:cache willEvictObject:obj];
     [self purgeObject:obj];
+}
+
+- (NSArray *)allKeys
+{
+    return [_cachedItems allKeys];
 }
 
 - (id)oldestObjectInCache
