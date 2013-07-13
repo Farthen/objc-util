@@ -116,7 +116,7 @@
     [super setObject:item forKey:key cost:cost];
     [_cachedItems setObject:item forKey:key];
     
-    //DDLogModel(@"Adding object %@ with key: %@ to cache: \"%@\", new object count: %i", [obj description], key, self.name, self.objectCount);
+    DDLogModel(@"Adding object %@ with key: %@ to cache: \"%@\", new object count: %i", [obj description], key, self.name, self.objectCount);
 }
 
 - (void)setObject:(id)obj forKey:(id)key expirationTime:(NSTimeInterval)expirationTime
@@ -140,7 +140,7 @@
     [self removeExpirationDataForKey:key];
     [_cachedItems removeObjectForKey:key];
     
-    //DDLogModel(@"Purging object %@ from cache: \"%@\", new object count: %i", [[obj object] description], self.name, self.objectCount);
+    DDLogModel(@"Purging object %@ from cache: \"%@\", new object count: %i", [[obj object] description], self.name, self.objectCount);
 }
 
 - (void)purgeObject:(id)obj
@@ -181,16 +181,20 @@
 
 - (void)reloadAllTimers
 {
-    [self removeAllTimers];
-    for (id key in _cachedItems) {
-        FACachedItem *item = [_cachedItems objectForKey:key];
-        if ([item objectHasExpired])
-        {
-            [self removeObjectForKey:key];
-        } else {
-            [item setTimer];
-        }
-    }
+    @synchronized(self){
+                  [self removeAllTimers];
+                  NSDictionary *items = [_cachedItems copy];
+                  for (id key in items) {
+                      FACachedItem *item = [_cachedItems objectForKey:key];
+                      if ([item objectHasExpired])
+                      {
+                          [self removeObjectForKey:key];
+                      } else {
+                          [item setTimer];
+                      }
+                  }
+    };
+
 }
 
 - (NSArray *)indexes
