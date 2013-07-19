@@ -310,7 +310,7 @@
 {
     [aCoder encodeObject:_cache forKey:@"cache"];
     [aCoder encodeObject:_key forKey:@"key"];
-    [aCoder encodeInteger:self.cost forKey:@"cost"];
+    [aCoder encodeInteger:(NSInteger)self.cost forKey:@"cost"];
     [aCoder encodeObject:_object forKey:@"object"];
     [aCoder encodeObject:_expirationDate forKey:@"expirationDate"];
     [aCoder encodeDouble:_expirationTime forKey:@"expirationTime"];
