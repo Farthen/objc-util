@@ -8,7 +8,7 @@
 #import "FACache.h"
 
 #undef LOG_LEVEL
-#define LOG_LEVEL LOG_LEVEL_MODEL
+#define LOG_LEVEL LOG_LEVEL_ERROR
 
 @implementation FACache {
     NSMutableDictionary *_cachedItems;
@@ -42,11 +42,12 @@
 {
     self = [self init];
     if (self) {
-        _cachedItems = [aDecoder decodeObjectForKey:@"cachedItems"];
-        for (id key in _cachedItems) {
-            FACachedItem *item = [_cachedItems objectForKey:key];
+        NSMutableDictionary *cachedItems = [aDecoder decodeObjectForKey:@"cachedItems"];
+        for (id key in cachedItems) {
+            FACachedItem *item = [cachedItems objectForKey:key];
             [super setObject:item forKey:key cost:item.cost];
         }
+        _cachedItems = cachedItems;
         _realDelegate = [aDecoder decodeObjectForKey:@"realDelegate"];
         self.defaultExpirationTime = [aDecoder decodeDoubleForKey:@"defaultExpirationTime"];
         self.name = [aDecoder decodeObjectForKey:@"name"];
