@@ -31,7 +31,10 @@
 @property (readonly) NSUInteger totalCost;
 
 // Array with all the keys of the objects in the cache
-@property (readonly) NSArray *contentKeys;
+@property (readonly) NSArray *allKeys;
+
+// Array with all objects in the cache
+@property (readonly) NSArray *allObjects;
 
 // Expiration time that is automatically assumed if none is given
 // Set to 0 to have no default expiration time

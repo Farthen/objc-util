@@ -213,9 +213,22 @@
     return totalCost;
 }
 
-- (NSArray *)contentKeys
+- (NSArray *)allKeys
 {
     return _cachedItems.allKeys;
+}
+
+- (NSArray *)allObjects
+{
+    NSArray *allKeys = self.allKeys;
+    NSMutableArray *allObjects = [[NSMutableArray alloc] initWithCapacity:allKeys.count];
+    for (id key in allKeys) {
+        id object = [self objectForKey:key];
+        if (object) {
+            [allObjects addObject:object];
+        }
+    }
+    return allObjects.copy;
 }
 
 - (NSUInteger)objectCount
@@ -237,11 +250,6 @@
 {
     [_realDelegate cache:cache willEvictObject:obj];
     [self purgeObject:obj];
-}
-
-- (NSArray *)allKeys
-{
-    return [_cachedItems allKeys];
 }
 
 - (id)oldestObjectInCache
