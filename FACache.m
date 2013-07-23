@@ -141,7 +141,7 @@
     [self removeExpirationDataForKey:key];
     [_cachedItems removeObjectForKey:key];
     
-    DDLogModel(@"Purging object %@ from cache: \"%@\", new object count: %i", [[obj object] description], self.name, self.objectCount);
+    DDLogModel(@"Purging object %@ for key: %@ from cache: \"%@\", new object count: %i", [[obj object] description], key, self.name, self.objectCount);
 }
 
 - (void)purgeObject:(id)obj
