@@ -10,10 +10,7 @@
 #undef LOG_LEVEL
 #define LOG_LEVEL LOG_LEVEL_ERROR
 
-@implementation FACache {
-    NSMutableDictionary *_cachedItems;
-    id <NSCacheDelegate> _realDelegate;
-}
+@implementation FACache
 
 - (id)init
 {
@@ -105,6 +102,11 @@
     return item.object;
 }
 
+- (void)backingCacheSetObject:(id)obj forKey:(id)key cost:(NSUInteger)cost
+{
+    [super setObject:obj forKey:key cost:cost];
+}
+
 - (void)setObject:(id)obj forKey:(id)key cost:(NSUInteger)cost expirationTime:(NSTimeInterval)expirationTime
 {
     if (obj == nil) {
@@ -114,7 +116,7 @@
     item.expirationTime = expirationTime;
     item.cost = cost;
     
-    [super setObject:item forKey:key cost:cost];
+    [self backingCacheSetObject:item forKey:key cost:cost];
     [_cachedItems setObject:item forKey:key];
     
     DDLogModel(@"Adding object %@ with key: %@ to cache: \"%@\", new object count: %i", [obj description], key, self.name, self.objectCount);
@@ -276,14 +278,7 @@
 
 @end
 
-@implementation FACachedItem {
-    FACache *_cache;
-    id _key;
-    id _object;
-    NSDate *_expirationDate;
-    NSTimer *_expirationTimer;
-    NSTimeInterval _expirationTime;
-}
+@implementation FACachedItem
 
 - (id)initWithCache:(FACache *)cache key:(id)key object:(id)object
 {
