@@ -211,9 +211,10 @@
 {
     if (self.accessCount > 0) {
         _accessCount--;
-        [self discardContentIfPossible];
-        [self.lock unlock];
     }
+    
+    [self discardContentIfPossible];
+    [self.lock unlock];
 }
 
 - (void)endAllContentAccess
