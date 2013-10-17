@@ -173,7 +173,7 @@
 
 - (NSString *)filename
 {
-    return [((FABigDataCache *)self.cache).filePath stringByAppendingPathComponent:self.cacheKey];
+    return [((FABigDataCache *)self.cache).filePath stringByAppendingPathComponent:[self.cacheKey base64EncodedString]];
 }
 
 - (id)object
@@ -188,6 +188,15 @@
     } afterDelay:0];
     
     return object;
+}
+
+- (void)setObject:(id)object
+{
+    [self beginContentAccess];
+    
+    _object = object;
+    
+    [self endContentAccess];
 }
 
 - (BOOL)beginContentAccess
@@ -242,7 +251,6 @@
 {
     [self.lock lock];
     
-    [self commitToPersistentStorage];
     _object = nil;
     
     [self.lock unlock];
