@@ -82,6 +82,9 @@
 // The lock that is aquired by all methods that need it
 @property NSRecursiveLock *lock;
 
+// The version number that is checked for equality before decoding *any* cache
++ (void)setCodingVersionNumber:(NSInteger)versionNumber;
+
 @end
 
 #import "FACache+Private.h"

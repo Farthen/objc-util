@@ -11,7 +11,7 @@
 #undef LOG_LEVEL
 #define LOG_LEVEL LOG_LEVEL_INFO
 
-static const NSInteger codingVersionNumber = 9;
+static NSInteger codingVersionNumber = 0;
 
 @interface FACache ()
 @property NSMutableDictionary *cachedItems;
@@ -62,6 +62,11 @@ static const NSInteger codingVersionNumber = 9;
         self.name = name;
     }
     return self;
+}
+
++ (void)setCodingVersionNumber:(NSInteger)versionNumber
+{
+    codingVersionNumber = versionNumber;
 }
 
 - (id)initWithCoder:(NSCoder *)aDecoder
