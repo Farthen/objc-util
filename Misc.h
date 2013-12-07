@@ -48,10 +48,16 @@
 #define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
 #define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
 
-#ifdef DEBUG
+#if DEBUG
 #define FA_MUST_OVERRIDE_IN_SUBCLASS [NSException raise:NSInternalInconsistencyException format:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)];
 #else
 #define FA_MUST_OVERRIDE_IN_SUBCLASS NSLog(@"[ERROR] %@ should have been overridden in a subclass but it wasn't! Not bailing out but this will probably fail silently", NSStringFromSelector(_cmd));
+#endif
+
+#if DEBUG
+#define FA_INVALID_METHOD [NSException raise:NSInternalInconsistencyException format:@"You can't call %@ because it is not supported!", NSStringFromSelector(_cmd)];
+#else
+#define FA_INVALID_METHOD NSLog(@"[ERROR] You can't call %@ because it is not supported! Not bailing out but this will probably fail silently", NSStringFromSelector(_cmd));
 #endif
 
 #endif
