@@ -15,6 +15,7 @@ static NSInteger codingVersionNumber = 0;
 
 @interface FACache ()
 @property NSMutableDictionary *cachedItems;
+@property NSMutableArray *cachedItemsSortedByAge;
 @end
 
 @implementation FACache
@@ -24,6 +25,7 @@ static NSInteger codingVersionNumber = 0;
     self = [super init];
     if (self) {
         self.cachedItems = [[NSMutableDictionary alloc] init];
+        self.cachedItemsSortedByAge = [NSMutableArray array];
         
         self.lock = [[NSRecursiveLock alloc] init];
         self.lock.name = @"FACacheLock";
@@ -84,6 +86,17 @@ static NSInteger codingVersionNumber = 0;
                     FACachedItem *cachedItem = [cachedItems objectForKey:key];
                     cachedItem.cache = self;
                 }
+                
+                NSArray *allObjects = self.allObjects;
+                
+                self.cachedItemsSortedByAge = [[allObjects sortedArrayUsingComparator:^NSComparisonResult(FACachedItem *obj1, FACachedItem *obj2) {
+                    NSDate *firstDate = obj1.dateAdded;
+                    NSDate *secondDate = obj2.dateAdded;
+                    
+                    // We want to sort backwards (biggest item first)
+                    return [secondDate compare:firstDate];
+                }] mutableCopy];
+                
             }
             
             DDLogModel(@"FACache \"%@\" loaded from coder. Keys: %@", self.name, self.allKeys);
@@ -169,6 +182,8 @@ static NSInteger codingVersionNumber = 0;
             FACachedItem *cachedItem = [self.cachedItems objectForKey:key];
             cachedItem.cache = self;
         }
+        
+        self.cachedItemsSortedByAge = cache.cachedItemsSortedByAge;
     }
     
     [self.lock unlock];
@@ -316,11 +331,11 @@ static NSInteger codingVersionNumber = 0;
         
         [self.lock lock];
         
-        NSArray *sortedItems = [self cachedItemsSortedByAge];
+        NSEnumerator *sortedItems = [self.cachedItemsSortedByAge reverseObjectEnumerator];
         
-        NSUInteger itemCount = sortedItems.count;
-        for (NSUInteger i = 0; i < itemCount; i++) {
-            FACachedItem *item = sortedItems[i];
+        FACachedItem *item = sortedItems.nextObject;
+        
+        while (item != nil) {
             [self removeObjectForKey:item.cacheKey];
             
             itemsToRemove -= 1;
@@ -330,6 +345,8 @@ static NSInteger codingVersionNumber = 0;
                 itemCostToReduce <= 0) {
                 break;
             }
+            
+            item = sortedItems.nextObject;
         }
         
         [self.lock unlock];
@@ -362,6 +379,10 @@ static NSInteger codingVersionNumber = 0;
 {
     [self.lock lock];
     
+    // Remove the item from the thing (yes, this is slow, but what can you do)
+    FACachedItem *removeItem = [self cachedItemForKey:key];
+    [self.cachedItemsSortedByAge removeObject:removeItem];
+    
     [self removeExpirationDataForKey:key];
     [self.cachedItems removeObjectForKey:key];
     
@@ -372,6 +393,7 @@ static NSInteger codingVersionNumber = 0;
 {
     [self.lock lock];
     
+    [self.cachedItemsSortedByAge removeAllObjects];
     [self.cachedItems removeAllObjects];
     
     [self.lock unlock];
@@ -416,6 +438,10 @@ static NSInteger codingVersionNumber = 0;
 {
     [self.lock lock];
     
+    // We can optimize this. We don't need to compare this with all dates and make this incredibly slow
+    // We can simply add it to the end. This is because time is linear. Timey-Whimey stuff is unsupported
+    [self.cachedItemsSortedByAge addObject:cachedItem];
+    
     [self.cachedItems setObject:cachedItem forKey:key];
     [self evictItemsIfNeeded];
     
@@ -431,24 +457,6 @@ static NSInteger codingVersionNumber = 0;
     
     [self.lock unlock];
     return item.object;
-}
-
-- (NSArray *)cachedItemsSortedByAge
-{
-    [self.lock lock];
-    
-    NSArray *objects = self.allCachedItems;
-    NSArray *sorted = [objects sortedArrayUsingComparator:^NSComparisonResult(FACachedItem *obj1, FACachedItem *obj2) {
-        NSDate *firstDate = obj1.dateAdded;
-        NSDate *secondDate = obj2.dateAdded;
-        
-        // We want to sort backwards (biggest item first)
-        return [secondDate compare:firstDate];
-    }];
-    
-    [self.lock unlock];
-    
-    return sorted;
 }
 
 - (NSArray *)allCachedItems
@@ -527,6 +535,7 @@ static NSInteger codingVersionNumber = 0;
 - (void)applicationDidReceiveMemoryWarningNotification:(NSNotification *)notification
 {
     // We *really* need to free some memory so just evict all cached objects
+    // TODO: Reload from disk when memory pressure is good again
     [self saveToDisk];
     [self evictAllObjects];
 }
