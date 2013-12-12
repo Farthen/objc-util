@@ -334,14 +334,8 @@ static NSInteger codingVersionNumber = 0;
         itemCostToReduce > 0) {
         
         [self.lock lock];
-        
-        NSEnumerator *sortedItems = [self.cachedItemsSortedByAge reverseObjectEnumerator];
-        
-        FACachedItem *item = sortedItems.nextObject;
-        
-        do {
-            item = sortedItems.nextObject;
-            
+
+        for (FACachedItem *item in self.cachedItemsSortedByAge.reverseObjectEnumerator) {
             [self removeObjectForKey:item.cacheKey];
             
             itemsToRemove -= 1;
@@ -351,7 +345,7 @@ static NSInteger codingVersionNumber = 0;
                 itemCostToReduce <= 0) {
                 break;
             }
-        } while (item != nil);
+        }
         
         [self.lock unlock];
     }
