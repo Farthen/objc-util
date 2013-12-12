@@ -16,6 +16,8 @@ static NSInteger codingVersionNumber = 0;
 @interface FACache ()
 @property NSMutableDictionary *cachedItems;
 @property NSMutableArray *cachedItemsSortedByAge;
+
+@property BOOL evictedToDisk;
 @end
 
 @implementation FACache
@@ -185,6 +187,8 @@ static NSInteger codingVersionNumber = 0;
         
         self.cachedItemsSortedByAge = cache.cachedItemsSortedByAge;
     }
+    
+    self.evictedToDisk = NO;
     
     [self.lock unlock];
 }
@@ -369,6 +373,10 @@ static NSInteger codingVersionNumber = 0;
 {
     [self.lock lock];
     
+    if (self.evictedToDisk) {
+        [self reloadDataFromDisk];
+    }
+    
     FACachedItem *item = [self.cachedItems objectForKey:key];
     
     [self.lock unlock];
@@ -378,6 +386,10 @@ static NSInteger codingVersionNumber = 0;
 - (void)removeCachedItemForKey:(id)key
 {
     [self.lock lock];
+    
+    if (self.evictedToDisk) {
+        [self reloadDataFromDisk];
+    }
     
     // Remove the item from the thing (yes, this is slow, but what can you do)
     FACachedItem *removeItem = [self cachedItemForKey:key];
@@ -425,6 +437,10 @@ static NSInteger codingVersionNumber = 0;
 - (void)evictAllExpiredObjects
 {
     [self.lock lock];
+    
+    if (self.evictedToDisk) {
+        [self reloadDataFromDisk];
+    }
     
     for (id key in self.cachedItems)
     {
@@ -536,8 +552,13 @@ static NSInteger codingVersionNumber = 0;
 {
     // We *really* need to free some memory so just evict all cached objects
     // TODO: Reload from disk when memory pressure is good again
+    [self.lock lock];
+    
+    self.evictedToDisk = YES;
     [self saveToDisk];
     [self evictAllObjects];
+    
+    [self.lock unlock];
 }
 
 - (void)applicationWillTerminateNotification:(NSNotification *)notification
