@@ -13,6 +13,7 @@
 @interface FABigDataCachedItem : FACachedItem <NSDiscardableContent>
 
 @property (assign) BOOL dirty;
+@property (assign) NSUInteger objectHash;
 @property (readonly) NSInteger accessCount;
 
 - (BOOL)isContentDiscarded;
@@ -185,7 +186,7 @@
     // At the moment set to 0 seconds so it will time out when the current event loop is done
     [self performBlock:^{
         [self endContentAccess];
-    } afterDelay:0];
+    } afterDelay:30];
     
     return object;
 }
@@ -195,15 +196,15 @@
     [self beginContentAccess];
     
     _object = object;
+    self.dirty = _object != object;
+    self.objectHash = [object hash];
     
     [self endContentAccess];
 }
 
 - (BOOL)beginContentAccess
 {
-    [self.lock lock];
     _accessCount++;
-    self.dirty = YES;
     return [self loadDataFromPersistentStorage];
 }
 
@@ -214,7 +215,6 @@
     }
     
     [self discardContentIfPossible];
-    [self.lock unlock];
 }
 
 - (void)endAllContentAccess
@@ -230,9 +230,13 @@
     
     if (_accessCount <= 0) {
         _accessCount = 0;
+        
+        self.dirty = self.dirty || self.objectHash != [self.object hash];
+        
         if (self.dirty) {
             [self commitToPersistentStorage];
         }
+        
         [self purgeDataFromMemory];
     }
     
@@ -263,6 +267,7 @@
     
     if (_object == nil) {
         _object = [NSKeyedUnarchiver unarchiveObjectWithFile:[self filename]];
+        self.dirty = NO;
     }
     
     BOOL value = _object != nil;
@@ -277,12 +282,15 @@
     [self.lock lock];
     
     if (_object != nil) {
-        if ([NSKeyedArchiver archiveRootObject:_object toFile:[self filename]]) {
-            self.dirty = NO;
-        }
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) , ^{
+            if ([NSKeyedArchiver archiveRootObject:_object toFile:[self filename]]) {
+                self.dirty = NO;
+                [self.lock unlock];
+            }
+        });
+    } else {
+        [self.lock unlock];
     }
-    
-    [self.lock unlock];
 }
 
 - (void)purgeFromPersistentStorage
