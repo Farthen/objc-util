@@ -335,7 +335,9 @@ static NSInteger codingVersionNumber = 0;
         
         FACachedItem *item = sortedItems.nextObject;
         
-        while (item != nil) {
+        do {
+            item = sortedItems.nextObject;
+            
             [self removeObjectForKey:item.cacheKey];
             
             itemsToRemove -= 1;
@@ -345,9 +347,7 @@ static NSInteger codingVersionNumber = 0;
                 itemCostToReduce <= 0) {
                 break;
             }
-            
-            item = sortedItems.nextObject;
-        }
+        } while (item != nil);
         
         [self.lock unlock];
     }
