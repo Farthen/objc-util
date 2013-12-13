@@ -10,20 +10,20 @@
 
 #import <Foundation/NSDate.h>
 
-#define NSTimeIntervalOneSecond 1
-#define NSTimeIntervalSeconds(x) NSTimeIntervalOneSecond * x
+#define FATimeIntervalOneSecond 1
+#define FATimeIntervalSeconds(x) FATimeIntervalOneSecond * x
 
-#define NSTimeIntervalOneMinute NSTimeIntervalSeconds(60)
-#define NSTimeIntervalMinutes(x) NSTimeIntervalOneMinute * x
+#define FATimeIntervalOneMinute FATimeIntervalSeconds(60)
+#define FATimeIntervalMinutes(x) FATimeIntervalOneMinute * x
 
-#define NSTimeIntervalOneHour NSTimeIntervalMinutes(60)
-#define NSTimeIntervalHours(x) NSTimeIntervalOneHour * x
+#define FATimeIntervalOneHour FATimeIntervalMinutes(60)
+#define FATimeIntervalHours(x) FATimeIntervalOneHour * x
 
-#define NSTimeIntervalOneDay NSTimeIntervalHours(24)
-#define NSTimeIntervalDays(x) NSTimeIntervalOneDay * x
+#define FATimeIntervalOneDay FATimeIntervalHours(24)
+#define FATimeIntervalDays(x) FATimeIntervalOneDay * x
 
-#define NSTimeIntervalOneWeek NSTimeIntervalDays(7)
-#define NSTimeIntervalWeeks(x) NSTimeIntervalOneWeek * x
+#define FATimeIntervalOneWeek FATimeIntervalDays(7)
+#define FATimeIntervalWeeks(x) FATimeIntervalOneWeek * x
 
 
 
