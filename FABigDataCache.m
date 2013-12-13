@@ -140,6 +140,8 @@
     if (self) {
         // Access object to force it to be purged if not "retained"
         [self object];
+        
+        _saveToDiskSemaphore = dispatch_semaphore_create(1);
     }
     return self;
 }
