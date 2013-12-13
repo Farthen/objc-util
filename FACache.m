@@ -89,9 +89,9 @@ static NSInteger codingVersionNumber = 0;
                     cachedItem.cache = self;
                 }
                 
-                NSArray *allObjects = self.allObjects;
+                NSArray *allCachedItems = cachedItems.allValues;
                 
-                self.cachedItemsSortedByAge = [[allObjects sortedArrayUsingComparator:^NSComparisonResult(FACachedItem *obj1, FACachedItem *obj2) {
+                self.cachedItemsSortedByAge = [[allCachedItems sortedArrayUsingComparator:^NSComparisonResult(FACachedItem *obj1, FACachedItem *obj2) {
                     NSDate *firstDate = obj1.dateAdded;
                     NSDate *secondDate = obj2.dateAdded;
                     
