@@ -130,6 +130,7 @@
 
 @implementation FABigDataCachedItem {
     NSInteger _accessCount;
+    dispatch_semaphore_t _saveToDiskSemaphore;
     id _object;
 }
 
@@ -148,7 +149,9 @@
     self = [super init];
     if (self) {
         _accessCount = 0;
+        _saveToDiskSemaphore = dispatch_semaphore_create(1);
     }
+    
     return self;
 }
 
@@ -157,6 +160,7 @@
     self = [super initWithCoder:aDecoder];
     if (self) {
         _accessCount = 0;
+        _saveToDiskSemaphore = dispatch_semaphore_create(1);
     }
     return self;
 }
@@ -261,6 +265,38 @@
     [self.lock unlock];
 }
 
+- (void)objectWithBlock:(void (^)(BOOL success, id object))callback
+{
+    [self.lock lock];
+    
+    if (_object != nil) {
+        BOOL success = [self beginContentAccess];
+        
+        id object = _object;
+        [self.lock unlock];
+        
+        callback(success, object);
+        
+        [self endContentAccess];
+    } else {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            dispatch_semaphore_wait(_saveToDiskSemaphore, DISPATCH_TIME_FOREVER);
+            
+            BOOL success = [self beginContentAccess];
+            id object = _object;
+            
+            dispatch_semaphore_signal(_saveToDiskSemaphore);
+            
+            callback(success, object);
+            
+            [self endContentAccess];
+        });
+        
+        [self.lock unlock];
+    }
+    
+}
+
 - (BOOL)loadDataFromPersistentStorage
 {
     [self.lock lock];
@@ -281,22 +317,34 @@
 {
     [self.lock lock];
     
+    
     if (_object != nil) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) , ^{
+            dispatch_semaphore_wait(_saveToDiskSemaphore, DISPATCH_TIME_FOREVER);
+            
             if ([NSKeyedArchiver archiveRootObject:_object toFile:[self filename]]) {
                 self.dirty = NO;
-                [self.lock unlock];
+                
+                dispatch_semaphore_signal(_saveToDiskSemaphore);
             }
         });
-    } else {
-        [self.lock unlock];
     }
+    
+    [self.lock unlock];
 }
 
 - (void)purgeFromPersistentStorage
 {
     [self.lock lock];
-    [[NSFileManager defaultManager] removeItemAtPath:[self filename] error:nil];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        dispatch_semaphore_wait(_saveToDiskSemaphore, DISPATCH_TIME_FOREVER);
+        
+        [[NSFileManager defaultManager] removeItemAtPath:[self filename] error:nil];
+        
+        dispatch_semaphore_signal(_saveToDiskSemaphore);
+    });
+    
     [self.lock unlock];
 }
 
@@ -304,6 +352,13 @@
 {
     // We are leaving and nobody can stop us!
     [self endAllContentAccess];
+    
+    // Wait for any activity to occur and dealloc the semaphore
+    // FIXME: Is this needed?
+    dispatch_semaphore_wait(_saveToDiskSemaphore, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_t oldSemaphore = _saveToDiskSemaphore;
+    _saveToDiskSemaphore = NULL;
+    dispatch_semaphore_signal(oldSemaphore);
 }
 
 @end
