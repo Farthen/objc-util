@@ -9,8 +9,6 @@
 #ifndef Zapr_FALogLevels_h
 #define Zapr_FALogLevels_h
 
-#import <DDLog.h>
-
 #undef LOG_FLAG_ERROR
 #undef LOG_FLAG_WARN
 #undef LOG_FLAG_INFO
