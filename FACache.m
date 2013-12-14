@@ -25,6 +25,7 @@ static NSInteger codingVersionNumber = 0;
 - (id)init
 {
     self = [super init];
+    
     if (self) {
         self.cachedItems = [[NSMutableDictionary alloc] init];
         self.cachedItemsSortedByAge = [NSMutableArray array];
@@ -40,6 +41,7 @@ static NSInteger codingVersionNumber = 0;
         [notificationCenter addObserver:self selector:@selector(applicationDidReceiveMemoryWarningNotification:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
         [notificationCenter addObserver:self selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
     }
+    
     return self;
 }
 
@@ -56,15 +58,18 @@ static NSInteger codingVersionNumber = 0;
     }
     
     self = instance;
+    
     return self;
 }
 
 - (id)initWithName:(NSString *)name
 {
     self = [self init];
+    
     if (self) {
         self.name = name;
     }
+    
     return self;
 }
 
@@ -77,13 +82,16 @@ static NSInteger codingVersionNumber = 0;
 {
     if (codingVersionNumber == [aDecoder decodeIntegerForKey:@"codingVersionNumber"]) {
         self = [self init];
+        
         if (self) {
             self.defaultExpirationTime = [aDecoder decodeDoubleForKey:@"defaultExpirationTime"];
             self.name = [aDecoder decodeObjectForKey:@"name"];
             
             NSMutableDictionary *cachedItems = [aDecoder decodeObjectForKey:@"cachedItems"];
+            
             if (cachedItems) {
                 self.cachedItems = cachedItems;
+                
                 for (id key in cachedItems) {
                     FACachedItem *cachedItem = [cachedItems objectForKey:key];
                     cachedItem.cache = self;
@@ -91,22 +99,23 @@ static NSInteger codingVersionNumber = 0;
                 
                 NSArray *allCachedItems = cachedItems.allValues;
                 
-                self.cachedItemsSortedByAge = [[allCachedItems sortedArrayUsingComparator:^NSComparisonResult(FACachedItem *obj1, FACachedItem *obj2) {
+                self.cachedItemsSortedByAge = [[allCachedItems sortedArrayUsingComparator:^NSComparisonResult (FACachedItem *obj1, FACachedItem *obj2) {
                     NSDate *firstDate = obj1.dateAdded;
                     NSDate *secondDate = obj2.dateAdded;
                     
                     // We want to sort backwards (biggest item first)
                     return [secondDate compare:firstDate];
                 }] mutableCopy];
-                
             }
             
             DDLogModel(@"FACache \"%@\" loaded from coder. Keys: %@", self.name, self.allKeys);
         }
     } else {
         DDLogWarn(@"Cache version number has changed. Rebuilding cache…");
+        
         return nil;
     }
+    
     return self;
 }
 
@@ -136,7 +145,7 @@ static NSInteger codingVersionNumber = 0;
 + (NSString *)filePathWithCacheName:(NSString *)name
 {
     NSArray *myPathList = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    NSString *myPath = [myPathList  objectAtIndex:0];
+    NSString *myPath = [myPathList objectAtIndex:0];
     
     return [myPath stringByAppendingPathComponent:[self codingFileNameWithCacheName:(NSString *)name]];
 }
@@ -146,6 +155,7 @@ static NSInteger codingVersionNumber = 0;
     NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[self filePathWithCacheName:name] error:nil];
     
     NSNumber *fileSizeNumber = [fileAttributes objectForKey:NSFileSize];
+    
     return [fileSizeNumber longLongValue];
 }
 
@@ -164,6 +174,7 @@ static NSInteger codingVersionNumber = 0;
 + (id)cacheFromDiskWithName:(NSString *)name
 {
     id cache = [NSKeyedUnarchiver unarchiveObjectWithFile:[self filePathWithCacheName:name]];
+    
     if (!cache) {
         [self removeCacheFileWithName:name];
     }
@@ -178,8 +189,10 @@ static NSInteger codingVersionNumber = 0;
     [self.lock lock];
     
     FACache *cache = [FACache cacheFromDiskWithName:self.name];
+    
     if (cache.cachedItems) {
         self.cachedItems = cache.cachedItems;
+        
         for (id key in self.cachedItems) {
             FACachedItem *cachedItem = [self.cachedItems objectForKey:key];
             cachedItem.cache = self;
@@ -213,6 +226,7 @@ static NSInteger codingVersionNumber = 0;
 - (void)checkExpirationDateForKey:(id)key
 {
     FACachedItem *item = [self cachedItemForKey:key];
+    
     if ([item objectHasExpired]) {
         [self removeObjectForKey:key];
     }
@@ -278,6 +292,7 @@ static NSInteger codingVersionNumber = 0;
     NSArray *indexes = self.cachedItems.allKeys;
     
     [self.lock unlock];
+    
     return indexes;
 }
 
@@ -294,6 +309,7 @@ static NSInteger codingVersionNumber = 0;
     }
     
     [self.lock unlock];
+    
     return totalCost;
 }
 
@@ -306,7 +322,6 @@ static NSInteger codingVersionNumber = 0;
     return allKeys;
 }
 
-
 - (NSUInteger)objectCount
 {
     [self.lock lock];
@@ -314,6 +329,7 @@ static NSInteger codingVersionNumber = 0;
     NSUInteger count = self.cachedItems.count;
     
     [self.lock unlock];
+    
     return count;
 }
 
@@ -326,15 +342,15 @@ static NSInteger codingVersionNumber = 0;
     }
     
     NSInteger itemCostToReduce = 0;
+    
     if (self.totalCostLimit > 0) {
         itemCostToReduce = self.totalCost - self.totalCostLimit;
     }
     
     if (itemsToRemove > 0 ||
         itemCostToReduce > 0) {
-        
         [self.lock lock];
-
+        
         for (FACachedItem *item in self.cachedItemsSortedByAge.reverseObjectEnumerator) {
             [self removeObjectForKey:item.cacheKey];
             
@@ -374,6 +390,7 @@ static NSInteger codingVersionNumber = 0;
     FACachedItem *item = [self.cachedItems objectForKey:key];
     
     [self.lock unlock];
+    
     return item;
 }
 
@@ -412,6 +429,7 @@ static NSInteger codingVersionNumber = 0;
     NSUInteger count = self.cachedItems.count;
     
     [self.lock unlock];
+    
     return count;
 }
 
@@ -436,8 +454,7 @@ static NSInteger codingVersionNumber = 0;
         [self reloadDataFromDisk];
     }
     
-    for (id key in self.cachedItems)
-    {
+    for (id key in self.cachedItems) {
         [self checkExpirationDateForKey:key];
     }
     
@@ -466,6 +483,7 @@ static NSInteger codingVersionNumber = 0;
     FACachedItem *item = [self cachedItemForKey:key];
     
     [self.lock unlock];
+    
     return item.object;
 }
 
@@ -486,6 +504,7 @@ static NSInteger codingVersionNumber = 0;
     
     NSArray *allKeys = self.allKeys;
     NSMutableArray *allObjects = [[NSMutableArray alloc] initWithCapacity:allKeys.count];
+    
     for (id key in allKeys) {
         id object = [self objectForKey:key];
         
@@ -513,8 +532,7 @@ static NSInteger codingVersionNumber = 0;
     for (id key in items) {
         FACachedItem *item = [self.cachedItems objectForKey:key];
         
-        if ([item objectHasExpired])
-        {
+        if ([item objectHasExpired]) {
             [removeKeys addObject:key];
         } else {
             [item setTimer];
@@ -574,6 +592,7 @@ static NSInteger codingVersionNumber = 0;
 - (id)initWithCache:(FACache *)cache key:(id)key object:(id)object
 {
     self = [super init];
+    
     if (self) {
         self.dateAdded = [NSDate date];
         self.cache = cache;
@@ -583,12 +602,14 @@ static NSInteger codingVersionNumber = 0;
         self.lock = [[NSRecursiveLock alloc] init];
         self.lock.name = @"FACachedItem";
     }
+    
     return self;
 }
 
 - (id)initWithCoder:(NSCoder *)aDecoder
 {
     self = [self init];
+    
     if (self) {
         _cache = [aDecoder decodeObjectForKey:@"cache"];
         _cacheKey = [aDecoder decodeObjectForKey:@"key"];
@@ -597,10 +618,12 @@ static NSInteger codingVersionNumber = 0;
         _expirationDate = [aDecoder decodeObjectForKey:@"expirationDate"];
         _expirationTime = [aDecoder decodeDoubleForKey:@"expirationTime"];
         _dateAdded = [aDecoder decodeObjectForKey:@"dateAdded"];
+        
         if (![self objectHasExpired]) {
             [self setTimer];
         }
     }
+    
     return self;
 }
 
@@ -628,11 +651,13 @@ static NSInteger codingVersionNumber = 0;
 {
     if (self.expirationDate) {
         NSTimeInterval interval = [self.expirationDate timeIntervalSinceNow];
+        
         if (interval < 0) {
             // Expiration date has passed
             return YES;
         }
     }
+    
     return NO;
 }
 

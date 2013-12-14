@@ -26,6 +26,6 @@
 @property (readonly) NSString *className;
 
 - (id)initWithProperty:(objc_property_t)property;
-- (BOOL)typeIsEqualToEncode:(const char*)encode;
+- (BOOL)typeIsEqualToEncode:(const char *)encode;
 
 @end

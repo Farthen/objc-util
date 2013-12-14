@@ -21,12 +21,15 @@
     unsigned int outCount, i;
     objc_property_t *properties = class_copyPropertyList(class, &outCount);
     NSMutableDictionary *results = [[NSMutableDictionary alloc] init];
+    
     for (i = 0; i < outCount; i++) {
         objc_property_t property = properties[i];
         FAPropertyInfo *propertyInfo = [[FAPropertyInfo alloc] initWithProperty:property];
         [results setObject:propertyInfo forKey:propertyInfo.name];
     }
+    
     free(properties);
+    
     return results;
 }
 

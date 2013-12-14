@@ -58,9 +58,9 @@
     [self.lock lock];
     
     NSUInteger count = 0;
+    
     for (FABigDataCachedItem *item in self.allObjects) {
         if ([item isKindOfClass:[FABigDataCachedItem class]]) {
-            
             if (![item isContentDiscarded]) {
                 count++;
             }
@@ -68,6 +68,7 @@
     }
     
     [self.lock unlock];
+    
     return count;
 }
 
@@ -96,6 +97,7 @@
     [[NSFileManager defaultManager] createDirectoryAtPath:myPath withIntermediateDirectories:YES attributes:nil error:nil];
     
     [self.lock unlock];
+    
     return myPath;
 }
 
@@ -118,6 +120,7 @@
 - (void)cleanObjectFromMemoryForKey:(id)key
 {
     id item = [self cachedItemForKey:key];
+    
     if ([item isKindOfClass:[NSNull class]]) {
         return;
     }
@@ -137,18 +140,21 @@
 - (instancetype)initWithCache:(FACache *)cache key:(id)key object:(id)object
 {
     self = [super initWithCache:cache key:key object:object];
+    
     if (self) {
         // Access object to force it to be purged if not "retained"
         [self object];
         
         _saveToDiskSemaphore = dispatch_semaphore_create(1);
     }
+    
     return self;
 }
 
 - (instancetype)init
 {
     self = [super init];
+    
     if (self) {
         _accessCount = 0;
         _saveToDiskSemaphore = dispatch_semaphore_create(1);
@@ -160,10 +166,12 @@
 - (instancetype)initWithCoder:(NSCoder *)aDecoder
 {
     self = [super initWithCoder:aDecoder];
+    
     if (self) {
         _accessCount = 0;
         _saveToDiskSemaphore = dispatch_semaphore_create(1);
     }
+    
     return self;
 }
 
@@ -180,7 +188,7 @@
 
 - (NSString *)filename
 {
-    return [((FABigDataCache *)self.cache).filePath stringByAppendingPathComponent:[self.cacheKey base64EncodedString]];
+    return [((FABigDataCache *)self.cache).filePath stringByAppendingPathComponent :[self.cacheKey base64EncodedString]];
 }
 
 - (id)object
@@ -211,6 +219,7 @@
 - (BOOL)beginContentAccess
 {
     _accessCount++;
+    
     return [self loadDataFromPersistentStorage];
 }
 
@@ -296,7 +305,6 @@
         
         [self.lock unlock];
     }
-    
 }
 
 - (BOOL)loadDataFromPersistentStorage
@@ -321,7 +329,7 @@
     
     
     if (_object != nil) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) , ^{
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             dispatch_semaphore_wait(_saveToDiskSemaphore, DISPATCH_TIME_FOREVER);
             
             if ([NSKeyedArchiver archiveRootObject:_object toFile:[self filename]]) {

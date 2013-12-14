@@ -14,6 +14,7 @@ UIEdgeInsets UIEdgeInsetsAdd(UIEdgeInsets a, UIEdgeInsets b)
     newEdgeInsets.left = a.left + b.left;
     newEdgeInsets.bottom = a.bottom + b.bottom;
     newEdgeInsets.right = a.right + b.right;
+    
     return newEdgeInsets;
 }
 
@@ -24,5 +25,6 @@ UIEdgeInsets UIEdgeInsetsSubtract(UIEdgeInsets a, UIEdgeInsets b)
     newEdgeInsets.left = a.left - b.left;
     newEdgeInsets.bottom = a.bottom - b.bottom;
     newEdgeInsets.right = a.right - b.right;
+    
     return newEdgeInsets;
 }

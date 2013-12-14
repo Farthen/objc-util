@@ -37,7 +37,8 @@
 @synthesize source = _source;
 
 + (RNTimer *)repeatingTimerWithTimeInterval:(NSTimeInterval)seconds
-                                      block:(void (^)(void))block {
+                                      block:(void (^)(void))block
+{
     NSParameterAssert(seconds);
     NSParameterAssert(block);
     
@@ -52,24 +53,28 @@
                               nsec, 0);
     dispatch_source_set_event_handler(timer.source, block);
     dispatch_resume(timer.source);
+    
     return timer;
 }
 
-- (void)invalidate {
+- (void)invalidate
+{
     if (self.source) {
         dispatch_source_cancel(self.source);
         self.source = nil;
     }
+    
     self.block = nil;
 }
 
-- (void)dealloc {
+- (void)dealloc
+{
     [self invalidate];
 }
 
-- (void)fire {
+- (void)fire
+{
     self.block();
 }
-
 
 @end
