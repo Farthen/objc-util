@@ -546,12 +546,12 @@ static NSInteger codingVersionNumber = 0;
 #pragma mark Notifications
 - (void)applicationWillEnterForegroundNotification:(NSNotification *)notification
 {
+    [self reloadDataFromDisk];
+    [self reloadAllTimers];
 }
 
 - (void)applicationDidBecomeActiveNotification:(NSNotification *)notification
 {
-    [self reloadDataFromDisk];
-    [self reloadAllTimers];
 }
 
 - (void)applicationDidEnterBackgroundNotification:(NSNotification *)notification
