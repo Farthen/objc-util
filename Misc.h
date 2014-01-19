@@ -5,8 +5,8 @@
 //  Copyright (c) 2013 Finn Wilke. All rights reserved.
 //
 
-#ifndef Zapr_Misc_h
-#define Zapr_Misc_h
+#ifndef Zapt_Misc_h
+#define Zapt_Misc_h
 
 #import <Foundation/NSDate.h>
 
