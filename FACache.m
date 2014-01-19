@@ -208,7 +208,7 @@ static NSInteger codingVersionNumber = 0;
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<FACache with name: \"%@\", object count: %i, total cost:%i>", self.name, self.objectCount, self.totalCost];
+    return [NSString stringWithFormat:@"<FACache with name: \"%@\", object count: %li, total cost:%lu>", self.name, (long)self.objectCount, (unsigned long)self.totalCost];
 }
 
 - (void)removeExpirationDataForKey:(id)key
@@ -250,7 +250,7 @@ static NSInteger codingVersionNumber = 0;
     // this is already thread-safe
     [self setCachedItem:item forKey:key];
     
-    DDLogModel(@"Adding object %@ with key: %@ to cache: \"%@\", new object count: %i", [obj description], key, self.name, self.objectCount);
+    DDLogModel(@"Adding object %@ with key: %@ to cache: \"%@\", new object count: %lu", [obj description], key, self.name, (unsigned long)self.objectCount);
 }
 
 - (void)setObject:(id)obj forKey:(id)key expirationTime:(NSTimeInterval)expirationTime

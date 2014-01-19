@@ -73,7 +73,7 @@
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<FABigDataCache with name: \"%@\", object count: %i (loaded)/%i (total), total cost:%i>", self.name, self.loadedObjectCount, self.objectCount, self.totalCost];
+    return [NSString stringWithFormat:@"<FABigDataCache with name: \"%@\", object count: %lu (loaded)/%li (total), total cost:%lu>", self.name, (unsigned long)self.loadedObjectCount, (long)self.objectCount, (unsigned long)self.totalCost];
 }
 
 - (void)purgeAllItemsFromPersistentStorage
@@ -113,7 +113,7 @@
     
     [self setCachedItem:item forKey:key];
     
-    DDLogModel(@"Adding object %@ with key: %@ to cache: \"%@\", new object count: %i", [obj description], key, self.name, self.objectCount);
+    DDLogModel(@"Adding object %@ with key: %@ to cache: \"%@\", new object count: %lu", [obj description], key, self.name, (unsigned long)self.objectCount);
 }
 
 - (void)cleanObjectFromMemoryForKey:(id)key
