@@ -37,6 +37,7 @@
 
 // Save/load the cache to/from disk
 - (BOOL)saveToDisk;
+- (void)reloadDataFromDisk;
 + (id)cacheFromDiskWithName:(NSString *)name;
 
 // The delegate of the cache
