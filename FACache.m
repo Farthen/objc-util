@@ -8,9 +8,6 @@
 #import "FACache.h"
 #import "FACache+Private.h"
 
-#undef LOG_LEVEL
-#define LOG_LEVEL LOG_LEVEL_INFO
-
 static NSInteger codingVersionNumber = 0;
 
 @interface FACache ()
