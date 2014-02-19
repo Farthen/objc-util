@@ -608,7 +608,6 @@ static NSInteger codingVersionNumber = 0;
     self = [self init];
     
     if (self) {
-        _cache = [aDecoder decodeObjectForKey:@"cache"];
         _cacheKey = [aDecoder decodeObjectForKey:@"key"];
         _cost = [aDecoder decodeIntegerForKey:@"cost"];
         _object = [aDecoder decodeObjectForKey:@"object"];
@@ -628,7 +627,6 @@ static NSInteger codingVersionNumber = 0;
 {
     [self.lock lock];
     
-    [aCoder encodeObject:_cache forKey:@"cache"];
     [aCoder encodeObject:_cacheKey forKey:@"key"];
     [aCoder encodeInteger:(NSInteger)self.cost forKey:@"cost"];
     [aCoder encodeObject:_object forKey:@"object"];
