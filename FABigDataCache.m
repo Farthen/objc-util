@@ -141,10 +141,11 @@
     self = [super initWithCache:cache key:key object:object];
     
     if (self) {
+        _accessCount = 0;
+        _saveToDiskSemaphore = dispatch_semaphore_create(1);
+        
         // Access object to force it to be purged if not "retained"
         [self object];
-        
-        _saveToDiskSemaphore = dispatch_semaphore_create(1);
     }
     
     return self;
@@ -208,9 +209,10 @@
 {
     [self beginContentAccess];
     
-    _object = object;
     self.dirty = _object != object;
     self.objectHash = [object hash];
+    
+    _object = object;
     
     [self endContentAccess];
 }
@@ -326,16 +328,15 @@
 {
     [self.lock lock];
     
-    
     if (_object != nil) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             dispatch_semaphore_wait(_saveToDiskSemaphore, DISPATCH_TIME_FOREVER);
             
             if ([NSKeyedArchiver archiveRootObject:_object toFile:[self filename]]) {
                 self.dirty = NO;
-                
-                dispatch_semaphore_signal(_saveToDiskSemaphore);
             }
+            
+            dispatch_semaphore_signal(_saveToDiskSemaphore);
         });
     }
     
