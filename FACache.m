@@ -560,7 +560,6 @@ static NSInteger codingVersionNumber = 0;
 - (void)applicationDidReceiveMemoryWarningNotification:(NSNotification *)notification
 {
     // We *really* need to free some memory so just evict all cached objects
-    // TODO: Reload from disk when memory pressure is good again
     [self.lock lock];
     
     self.evictedToDisk = YES;
