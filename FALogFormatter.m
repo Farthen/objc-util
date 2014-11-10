@@ -45,11 +45,11 @@
     NSString *dateString = [_dateFormatter stringFromDate:date];
 #ifdef DEBUG
     //Also display the file the logging occurred in to ease later debugging
-    NSString *file = [[[NSString stringWithUTF8String:logMessage->file] lastPathComponent] stringByDeletingPathExtension];
-    NSString *threadId = [NSString stringWithFormat:@"T:0x%X", logMessage->machThreadID];
+    NSString *file = [[logMessage.file lastPathComponent] stringByDeletingPathExtension];
+    NSString *threadId = [NSString stringWithFormat:@"T:0x%@", logMessage.threadID];
     
     //Format the message
-    return [NSString stringWithFormat:@"%@ %@ [%@]: \"%@\" || [%@@%s@%i]", dateString, threadId, logLevel, logMessage->logMsg, file, logMessage->function, logMessage->lineNumber];
+    return [NSString stringWithFormat:@"%@ %@ [%@]: \"%@\" || [%@@%@%lu]", dateString, threadId, logLevel, logMessage.message, file, logMessage.function, (unsigned long)logMessage.line];
 #else
     
     return [NSString stringWithFormat:@"%@ [%@]: %@", dateString, logLevel, logMessage.message];
