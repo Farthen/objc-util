@@ -27,29 +27,21 @@
 {
     NSString *logLevel;
     
-    switch (logMessage->logFlag) {
-        case LOG_FLAG_ERROR: logLevel = @"ERROR"; break;
+    switch (logMessage.flag) {
+        case DDLogFlagError: logLevel = @"ERROR"; break;
             
-        case LOG_FLAG_WARN: logLevel = @"WARN"; break;
+        case DDLogFlagWarning: logLevel = @"WARN"; break;
             
-        case LOG_FLAG_INFO: logLevel = @"INFO"; break;
+        case DDLogFlagInfo: logLevel = @"INFO"; break;
             
-        case LOG_FLAG_SMALL: logLevel = @"SMALL"; break;
+        case DDLogFlagDebug: logLevel = @"SMALL"; break;
             
-        case LOG_FLAG_TINY: logLevel = @"TINY"; break;
-            
-        case LOG_FLAG_MODEL: logLevel = @"MODEL"; break;
-            
-        case LOG_FLAG_VIEW: logLevel = @"VIEW"; break;
-            
-        case LOG_FLAG_CONTROLLER: logLevel = @"CONT"; break;
-            
-        case LOG_FLAG_VIEWCONTROLLER: logLevel = @"VCONT"; break;
+        case DDLogFlagVerbose: logLevel = @"VERBOSE"; break;
             
         default: logLevel = @"UNKNOWN"; break;
     }
     
-    NSDate *date = logMessage->timestamp;
+    NSDate *date = logMessage.timestamp;
     NSString *dateString = [_dateFormatter stringFromDate:date];
 #ifdef DEBUG
     //Also display the file the logging occurred in to ease later debugging
@@ -60,7 +52,7 @@
     return [NSString stringWithFormat:@"%@ %@ [%@]: \"%@\" || [%@@%s@%i]", dateString, threadId, logLevel, logMessage->logMsg, file, logMessage->function, logMessage->lineNumber];
 #else
     
-    return [NSString stringWithFormat:@"%@ [%@]: %@", dateString, logLevel, logMessage->logMsg];
+    return [NSString stringWithFormat:@"%@ [%@]: %@", dateString, logLevel, logMessage.message];
 #endif
 }
 
